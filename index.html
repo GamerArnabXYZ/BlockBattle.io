@@ -33,9 +33,16 @@
   <!-- Eruda Console -->
   <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
 
+  <script>
+  const script = document.createElement('script');
+  script.src = 'https://cdn.jsdelivr.net/npm/eruda';
+  script.onload = () => eruda.init();
+  document.body.appendChild(script);
+</script>
+
   <!-- Three.js + GLTFLoader via module -->
   <script type="module">
-    eruda.init();
+    
     console.log("Starting GLB loader...");
 
     import * as THREE from 'https://unpkg.com/three@0.161.0/build/three.module.js';
