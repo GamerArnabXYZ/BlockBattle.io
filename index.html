@@ -1,63 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BlockBattle.IO</title>
+  <meta charset="UTF-8">
+  <title>BlockBattle.io 3D Test</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body {
-      margin: 0;
-      background: white;
-      overflow: hidden;
-    }
-    canvas {
-      display: block;
-    }
+    html, body { margin: 0; height: 100%; overflow: hidden; background: yellow; }
+    canvas { display: block; }
   </style>
 </head>
 <body>
-  <script src="https://unpkg.com/three@0.152.2/build/three.min.js"></script>
-  <script src="https://unpkg.com/three@0.152.2/examples/js/loaders/GLTFLoader.js"></script>
-  <script src="https://unpkg.com/three@0.152.2/examples/js/controls/OrbitControls.js"></script>
-  <script>
+  <script type="module">
+    import * as THREE from 'https://unpkg.com/three@0.176.0/build/three.module.js';
+    import { GLTFLoader } from 'https://unpkg.com/three@0.176.0/examples/jsm/loaders/GLTFLoader.js';
+
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xffffff);
-
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-    camera.position.set(0, 1.5, 3);
-
-    const renderer = new THREE.WebGLRenderer({antialias: true});
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
-    const light = new THREE.HemisphereLight(0xffffff, 0x444444, 1.2);
+    const light = new THREE.HemisphereLight(0xffffff, 0x444444);
+    light.position.set(0, 20, 0);
     scene.add(light);
 
-    const loader = new THREE.GLTFLoader();
-    loader.load('models/player.glb', function(gltf) {
-      const model = gltf.scene;
-      model.position.set(0, 0, 0);
-      model.scale.set(1, 1, 1);
-      scene.add(model);
-    }, undefined, function(error) {
-      console.error('Error loading model:', error);
-    });
+    camera.position.z = 5;
 
-    const controls = new THREE.OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
+    const loader = new GLTFLoader();
+    loader.load('./models/player.glb', (gltf) => {
+      scene.add(gltf.scene);
+    }, undefined, (error) => {
+      console.error(error);
+    });
 
     function animate() {
       requestAnimationFrame(animate);
-      controls.update();
       renderer.render(scene, camera);
     }
-    animate();
 
-    window.addEventListener('resize', () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    });
+    animate();
   </script>
 </body>
 </html>
