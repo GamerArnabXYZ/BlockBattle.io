@@ -2,10 +2,18 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Model Debug</title>
+  <title>BlockBattle.io 3D Viewer</title>
   <style>
-    body { margin: 0; background: black; overflow: hidden; }
-    canvas { display: block; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #ffff00; /* Yellow for visibility */
+      height: 100vh;
+      overflow: hidden;
+    }
+    canvas {
+      display: block;
+    }
   </style>
 </head>
 <body>
@@ -15,15 +23,18 @@
     import { OrbitControls } from 'https://unpkg.com/three@0.176.0/examples/jsm/controls/OrbitControls.js';
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color('black');
 
-    const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 1000);
-    camera.position.set(0, 2, 5);
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.set(0, 1.5, 4);
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+
+    // Add lights
     const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.2);
     scene.add(hemiLight);
 
@@ -31,42 +42,44 @@
     dirLight.position.set(3, 10, 10);
     scene.add(dirLight);
 
-    const grid = new THREE.GridHelper(10, 10);
-    scene.add(grid);
-
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-
+    // Load your GLB model
     const loader = new GLTFLoader();
-    loader.load('models/player.glb', (gltf) => {
-      const model = gltf.scene;
+    loader.load(
+      'https://gamerarnabxyz.github.io/BlockBattle.io/models/player.glb',
+      function (gltf) {
+        const model = gltf.scene;
 
-      // Auto center and scale
-      const box = new THREE.Box3().setFromObject(model);
-      const size = box.getSize(new THREE.Vector3()).length();
-      const center = box.getCenter(new THREE.Vector3());
-      model.position.sub(center); // center the model
-      const scaleFactor = 2 / size;
-      model.scale.setScalar(scaleFactor);
+        // Center and scale the model
+        const box = new THREE.Box3().setFromObject(model);
+        const size = box.getSize(new THREE.Vector3()).length();
+        const center = box.getCenter(new THREE.Vector3());
 
-      scene.add(model);
-      console.log("Model loaded and added to scene.");
-    }, undefined, (err) => {
-      console.error('Failed to load GLB:', err);
-    });
+        model.position.sub(center); // Center the model
+        model.scale.setScalar(2 / size); // Scale to reasonable size
+        scene.add(model);
+        console.log('Model loaded and added to scene.');
+      },
+      undefined,
+      function (error) {
+        console.error('Error loading GLB model:', error);
+      }
+    );
 
-    function animate() {
-      requestAnimationFrame(animate);
-      controls.update();
-      renderer.render(scene, camera);
-    }
-    animate();
-
+    // Resize handler
     window.addEventListener('resize', () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
     });
+
+    // Animation loop
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    animate();
   </script>
 </body>
 </html>
