@@ -2,14 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>BlockBattle.io 3D Viewer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BlockBattle.io Debug Mode</title>
   <style>
-    html, body {
+    body {
       margin: 0;
-      padding: 0;
-      background: #ffff00; /* Yellow for visibility */
-      height: 100vh;
       overflow: hidden;
+      background: #fff;
     }
     canvas {
       display: block;
@@ -22,57 +21,71 @@
     import { GLTFLoader } from 'https://unpkg.com/three@0.176.0/examples/jsm/loaders/GLTFLoader.js';
     import { OrbitControls } from 'https://unpkg.com/three@0.176.0/examples/jsm/controls/OrbitControls.js';
 
+    // Scene setup
     const scene = new THREE.Scene();
+    console.log("Scene initialized");
 
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
-    camera.position.set(0, 1.5, 4);
+    // Camera setup
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(0, 2, 5);
+    console.log("Camera positioned");
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    // Renderer setup
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
+    console.log("Renderer created and added to DOM");
 
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-
-    // Add lights
+    // Lights
     const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.2);
+    hemiLight.position.set(0, 20, 0);
     scene.add(hemiLight);
 
     const dirLight = new THREE.DirectionalLight(0xffffff, 1);
     dirLight.position.set(3, 10, 10);
+    dirLight.castShadow = true;
     scene.add(dirLight);
+    console.log("Lights added");
 
-    // Load your GLB model
+    // Helpers
+    const gridHelper = new THREE.GridHelper(10, 10);
+    scene.add(gridHelper);
+
+    const axesHelper = new THREE.AxesHelper(5);
+    scene.add(axesHelper);
+    console.log("Debug helpers added");
+
+    // Controls
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.autoRotate = true;
+    controls.autoRotateSpeed = 1.0;
+    console.log("OrbitControls enabled");
+
+    // GLTF Loader
     const loader = new GLTFLoader();
+    const modelUrl = 'https://gamerarnabxyz.github.io/BlockBattle.io/models/player.glb';
+    console.log("Starting model load:", modelUrl);
+
     loader.load(
-      'https://gamerarnabxyz.github.io/BlockBattle.io/models/player.glb',
-      function (gltf) {
+      modelUrl,
+      (gltf) => {
+        console.log("Model loaded successfully");
         const model = gltf.scene;
-
-        // Center and scale the model
-        const box = new THREE.Box3().setFromObject(model);
-        const size = box.getSize(new THREE.Vector3()).length();
-        const center = box.getCenter(new THREE.Vector3());
-
-        model.position.sub(center); // Center the model
-        model.scale.setScalar(2 / size); // Scale to reasonable size
+        model.scale.set(2, 2, 2);  // Increased for visibility
+        model.position.y = 1;      // Raised above grid
         scene.add(model);
-        console.log('Model loaded and added to scene.');
+        console.log("Model added to scene");
       },
-      undefined,
-      function (error) {
-        console.error('Error loading GLB model:', error);
+      (xhr) => {
+        console.log(`Loading progress: ${(xhr.loaded / xhr.total * 100).toFixed(2)}%`);
+      },
+      (error) => {
+        console.error("Model failed to load:", error);
       }
     );
 
-    // Resize handler
-    window.addEventListener('resize', () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    });
-
-    // Animation loop
+    // Render loop
     function animate() {
       requestAnimationFrame(animate);
       controls.update();
@@ -80,6 +93,15 @@
     }
 
     animate();
+    console.log("Animation loop started");
+
+    // Resize handler
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      console.log("Window resized");
+    });
   </script>
 </body>
 </html>
